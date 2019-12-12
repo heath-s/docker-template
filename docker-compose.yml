@@ -1,0 +1,51 @@
+version: "2"
+
+services:
+  db:
+    container_name: db
+    restart: always
+    build:
+      context: .
+      dockerfile: mariadb.Dockerfile
+    volumes:
+      - ./db:/var/lib/mysql
+    expose:
+      - "3306"
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=docker_template
+      - MYSQL_USER=docker_template
+      - MYSQL_PASSWORD=docker_template
+
+  nginx:
+    depends_on:
+      - nodejs
+    container_name: nginx
+    restart: always
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+
+  nodejs:
+    depends_on:
+      - db
+    container_name: nodejs
+    restart: always
+    build:
+      context: .
+      dockerfile: nodejs.Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_USERNAME=docker_template
+      - DB_PASSWORD=docker_template
+      - DB_NAME=docker_template
+      - DB_HOSTNAME=db
+      - DB_PORT=3306
+    command: npm run start:prod
+    expose:
+      - "3000"
